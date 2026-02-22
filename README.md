@@ -1,36 +1,177 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Tars Real-Time Chat Application
 
-## Getting Started
+A production-style real-time chat application built with modern full-stack technologies.
 
-First, run the development server:
+This project was developed as part of the **Tars Full Stack Engineer Internship Coding Challenge**.  
+The focus was to build a clean, scalable, real-time system with production-ready UI — not just a functional demo.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## ✨ Features
+
+- 🔐 Secure Authentication (Clerk)
+- ⚡ Real-Time Messaging using Convex reactive queries
+- 🚀 Optimistic UI updates for instant feedback
+- 💬 WhatsApp-style Message Reactions
+- 👥 Message Grouping for improved readability
+- 🟢 Online Presence Indicators
+- 🗑️ Message Deletion
+- 🌙 Dark Mode UI
+- 🎯 Smooth Animations (Framer Motion)
+- 📦 Production Build Verified
+
+---
+
+## 🏗️ Tech Stack
+
+### Frontend
+- Next.js 16 (App Router)
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+
+### Backend
+- Convex (Reactive database + real-time engine)
+
+### Authentication
+- Clerk
+
+---
+
+## 🧠 Architecture Overview
+
+This application follows a **reactive architecture pattern**.
+
+### Real-Time Strategy
+
+Convex provides:
+- Reactive queries
+- Real-time data subscriptions
+- Automatic client updates when data changes
+
+Instead of manually managing WebSockets, the frontend subscribes to Convex queries.  
+When a mutation occurs, Convex re-runs affected queries and pushes updates to connected clients automatically.
+
+This keeps the frontend declarative and avoids complex socket state handling.
+
+---
+
+### Optimistic UI
+
+Messages are rendered optimistically before backend confirmation.
+
+**Benefits:**
+- Instant user feedback
+- Improved perceived performance
+- Cleaner interaction flow
+
+If a mutation fails, the UI can safely roll back.
+
+---
+
+## 📁 Project Structure
+
+```
+src/
+  app/            # Next.js App Router
+  components/     # UI components (ChatBubble, MessageList, Panels)
+  convex/         # Schema, queries, mutations
+  lib/            # Utility functions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The UI remains presentation-focused, while real-time logic lives inside Convex.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 Installation & Setup
 
-## Learn More
+Clone the repository:
 
-To learn more about Next.js, take a look at the following resources:
+```
+git clone <your-repo-link>
+cd tars-chat
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Install dependencies:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+npm install
+```
 
-## Deploy on Vercel
+Run development server:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+npm run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🔑 Required Environment Variables
+
+Create a `.env.local` file and add:
+
+```
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+NEXT_PUBLIC_CONVEX_URL=
+```
+
+You must configure:
+- A Clerk project
+- A Convex project
+
+---
+
+## 🧪 Production Build
+
+Production build verified using:
+
+```
+npm run build
+```
+
+✔ TypeScript validation passes  
+✔ Static optimization complete  
+✔ No runtime errors  
+
+---
+
+## 📈 Scalability Considerations
+
+The architecture supports future enhancements such as:
+
+- Message pagination
+- Read receipts
+- Rate limiting
+- End-to-end encryption
+- Message edit history
+- Message virtualization
+
+The current structure allows scaling without major refactoring.
+
+---
+
+## 🎯 Design Philosophy
+
+This project prioritizes:
+
+- Clean architecture  
+- Real-time correctness  
+- UI clarity  
+- Separation of concerns  
+- Production stability  
+
+The objective was to build something that feels like a real product rather than a basic CRUD demo.
+
+---
+
+## 👨‍💻 Author
+
+Harshdeep Singh  
+Full Stack Developer  
+
+---
+
+## 📄 License
+
+This project was built for internship evaluation purposes.
