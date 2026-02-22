@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Search, LogOut } from "lucide-react";
-import { useClerk } from "@clerk/nextjs";
+import { useClerk, UserButton } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { ONLINE_ROOM } from "@/lib/presence-rooms";
@@ -68,13 +68,7 @@ export default function LeftPanel({
             <div className="px-3 py-4 border-b border-neutral-200 dark:border-neutral-700">
                 <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                        {currentUser && (
-                            <img
-                                src={currentUser.image}
-                                alt=""
-                                className="w-8 h-8 rounded-full object-cover shrink-0"
-                            />
-                        )}
+                        <UserButton />
                         <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 truncate">
                             {currentUser?.name ?? "Messages"}
                         </span>
@@ -134,11 +128,10 @@ export default function LeftPanel({
                                 onSelectUser(otherUser._id);
                                 if (currentUserId) markRead({ userId: currentUserId, peerId: otherUser._id });
                             }}
-                            className={`w-full text-left px-2 py-2 rounded-lg mx-1 transition-[background-color,border-color] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-neutral-300 dark:focus:ring-neutral-500 focus:ring-offset-1 dark:focus:ring-offset-neutral-900 ${
-                                isSelected
-                                    ? "bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-500"
-                                    : "hover:bg-neutral-100/80 dark:hover:bg-neutral-800/40 border border-transparent"
-                            }`}
+                            className={`w-full text-left px-2 py-2 rounded-lg mx-1 transition-[background-color,border-color] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-neutral-300 dark:focus:ring-neutral-500 focus:ring-offset-1 dark:focus:ring-offset-neutral-900 ${isSelected
+                                ? "bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-500"
+                                : "hover:bg-neutral-100/80 dark:hover:bg-neutral-800/40 border border-transparent"
+                                }`}
                         >
                             <div className="flex items-start gap-2">
                                 <div className="relative shrink-0">
@@ -148,21 +141,19 @@ export default function LeftPanel({
                                         className="w-9 h-9 rounded-full object-cover"
                                     />
                                     <span
-                                        className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border-2 border-neutral-50 dark:border-neutral-900 ${
-                                            isOnline ? "bg-emerald-500" : "bg-neutral-300 dark:bg-neutral-600"
-                                        }`}
+                                        className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border-2 border-neutral-50 dark:border-neutral-900 ${isOnline ? "bg-emerald-500" : "bg-neutral-300 dark:bg-neutral-600"
+                                            }`}
                                         aria-hidden
                                     />
                                 </div>
                                 <div className="min-w-0 flex-1 relative">
                                     <p
-                                        className={`text-sm truncate pr-8 ${
-                                            isSelected
+                                        className={`text-sm truncate pr-8 ${isSelected
+                                            ? "font-semibold text-neutral-900 dark:text-neutral-100"
+                                            : isUnread
                                                 ? "font-semibold text-neutral-900 dark:text-neutral-100"
-                                                : isUnread
-                                                  ? "font-semibold text-neutral-900 dark:text-neutral-100"
-                                                  : "font-medium text-neutral-800 dark:text-neutral-200"
-                                        }`}
+                                                : "font-medium text-neutral-800 dark:text-neutral-200"
+                                            }`}
                                     >
                                         {otherUser.name}
                                     </p>
