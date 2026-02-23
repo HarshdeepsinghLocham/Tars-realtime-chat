@@ -24,19 +24,21 @@ export const updateUserFromClerk = mutation({
     args: {
         clerkId: v.string(),
         name: v.string(),
-        image: v.string(),
+        image: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         const user = await ctx.db
             .query("users")
-            .filter(q => q.eq(q.field("clerkId"), args.clerkId))
-            .first();
+            .withIndex("by_clerkId", (q) =>
+                q.eq("clerkId", args.clerkId)
+            )
+            .unique();
 
         if (!user) return;
 
         await ctx.db.patch(user._id, {
             name: args.name,
-            image: args.image,
+            ...(args.image !== undefined && { image: args.image }),
         });
     },
 });
