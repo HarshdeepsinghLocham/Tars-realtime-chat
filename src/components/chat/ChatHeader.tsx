@@ -4,13 +4,44 @@ import { Doc } from "../../../convex/_generated/dataModel";
 
 interface ChatHeaderProps {
     selectedUserData?: Doc<"users">;
+    selectedGroupData?: Doc<"groups">;
     isOnline?: boolean;
 }
 
 export default function ChatHeader({
     selectedUserData,
+    selectedGroupData,
     isOnline = false,
 }: ChatHeaderProps) {
+    if (!selectedUserData && !selectedGroupData) return null;
+
+    if (selectedGroupData) {
+        const initials = selectedGroupData.name
+            .split(" ")
+            .map((part) => part[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase();
+
+        return (
+            <header className="flex items-center justify-between" role="banner">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-sm font-semibold text-neutral-800 dark:text-neutral-100">
+                        {initials}
+                    </div>
+                    <div>
+                        <p className="font-semibold text-neutral-900 dark:text-neutral-100">
+                            {selectedGroupData.name}
+                        </p>
+                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                            Group chat
+                        </p>
+                    </div>
+                </div>
+            </header>
+        );
+    }
+
     if (!selectedUserData) return null;
 
     return (

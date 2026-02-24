@@ -12,10 +12,13 @@ export default function Home() {
   const { user } = useUser();
   const createUser = useMutation(api.users.createUser);
   const sendMessage = useMutation(api.messages.sendMessage);
+   const sendGroupMessage = useMutation(api.groups.sendGroupMessage);
   const users = useQuery(api.users.getUsers);
 
   const [selectedUser, setSelectedUser] =
     useState<Id<"users"> | null>(null);
+  const [selectedGroupId, setSelectedGroupId] =
+    useState<Id<"groups"> | null>(null);
 
   const currentUser = users?.find(
     (u) => u.clerkId === user?.id
@@ -26,6 +29,18 @@ export default function Home() {
     selectedUser && currentUser
       ? { user1: currentUser._id, user2: selectedUser }
       : "skip"
+  );
+
+  const groupMessages = useQuery(
+    api.groups.getGroupMessages,
+    selectedGroupId
+      ? { groupId: selectedGroupId }
+      : "skip"
+  );
+
+  const groups = useQuery(
+    api.groups.getGroupsForUser,
+    currentUser ? { userId: currentUser._id } : "skip"
   );
 
   useEffect(() => {
@@ -45,9 +60,20 @@ export default function Home() {
           currentUser={currentUser ?? null}
           users={users}
           selectedUser={selectedUser}
-          setSelectedUser={setSelectedUser}
+          setSelectedUser={(id) => {
+            setSelectedUser(id);
+            setSelectedGroupId(null);
+          }}
+          selectedGroupId={selectedGroupId}
+          setSelectedGroupId={(id) => {
+            setSelectedGroupId(id);
+            setSelectedUser(null);
+          }}
           messages={messages}
+          groupMessages={groupMessages}
           sendMessage={sendMessage}
+          sendGroupMessage={sendGroupMessage}
+          groups={groups}
         />
       </SignedIn>
     </>

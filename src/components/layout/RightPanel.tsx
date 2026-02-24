@@ -16,6 +16,8 @@ const HEARTBEAT_MS = 15_000;
 interface RightPanelProps {
     selectedUser: Id<"users"> | null;
     selectedUserData: Doc<"users"> | undefined;
+    selectedGroupId: Id<"groups"> | null;
+    selectedGroupData: Doc<"groups"> | undefined;
     messages: (Doc<"messages"> & { _creationTime: number })[] | undefined;
     currentUserId: Id<"users"> | null;
     onSend: (content: string) => void | Promise<unknown>;
@@ -24,6 +26,8 @@ interface RightPanelProps {
 export default function RightPanel({
     selectedUser,
     selectedUserData,
+    selectedGroupId,
+    selectedGroupData,
     messages,
     currentUserId,
     onSend,
@@ -124,18 +128,19 @@ export default function RightPanel({
             <div className="px-4 py-4 border-b border-neutral-200 dark:border-neutral-600/80">
                 <ChatHeader
                     selectedUserData={selectedUserData}
+                    selectedGroupData={selectedGroupData}
                     isOnline={isSelectedUserOnline}
                 />
             </div>
 
             <div className="flex-1 flex flex-col overflow-hidden px-4 min-h-0">
-                {selectedUser ? (
+                {selectedUser || selectedGroupId ? (
                     <>
                         <MessageList
                             messages={messages}
                             optimisticMessages={optimisticMessages}
                             currentUserId={currentUserId}
-                            otherUserName={selectedUserData?.name}
+                            otherUserName={selectedGroupData ? selectedGroupData.name : selectedUserData?.name}
                             onDeleteMessage={(id) => currentUserId && deleteMessage({ messageId: id, userId: currentUserId })}
                             onToggleReaction={(messageId, emoji) => currentUserId && toggleReaction({ messageId, userId: currentUserId, emoji })}
                         />

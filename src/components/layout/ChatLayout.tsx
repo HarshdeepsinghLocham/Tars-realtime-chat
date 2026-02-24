@@ -13,6 +13,11 @@ interface ChatLayoutProps {
     setSelectedUser: (id: Id<"users"> | null) => void;
     messages: (Doc<"messages"> & { _creationTime: number; deleted?: boolean })[] | undefined;
     sendMessage: (args: { senderId: Id<"users">; receiverId: Id<"users">; content: string }) => Promise<unknown>;
+    selectedGroupId: Id<"groups"> | null;
+    setSelectedGroupId: (id: Id<"groups"> | null) => void;
+    groupMessages: (Doc<"messages"> & { _creationTime: number; deleted?: boolean })[] | undefined;
+    sendGroupMessage: (args: { groupId: Id<"groups">; senderId: Id<"users">; content: string }) => Promise<unknown>;
+    groups: Doc<"groups">[] | undefined;
 }
 
 export default function ChatLayout({
@@ -22,21 +27,42 @@ export default function ChatLayout({
     setSelectedUser,
     messages,
     sendMessage,
+    selectedGroupId,
+    setSelectedGroupId,
+    groupMessages,
+    sendGroupMessage,
+    groups,
 }: ChatLayoutProps) {
     const [mobileChatOpen, setMobileChatOpen] = useState(false);
 
     const handleSelectUser = (id: Id<"users">) => {
         setSelectedUser(id);
+        setSelectedGroupId(null);
+        setMobileChatOpen(true);
+    };
+
+    const handleSelectGroup = (id: Id<"groups">) => {
+        setSelectedGroupId(id);
+        setSelectedUser(null);
         setMobileChatOpen(true);
     };
 
     const handleSend = async (content: string) => {
-        if (!currentUser || !selectedUser) return;
-        await sendMessage({
-            senderId: currentUser._id,
-            receiverId: selectedUser,
-            content,
-        });
+        if (!currentUser) return;
+
+        if (selectedUser) {
+            await sendMessage({
+                senderId: currentUser._id,
+                receiverId: selectedUser,
+                content,
+            });
+        } else if (selectedGroupId) {
+            await sendGroupMessage({
+                groupId: selectedGroupId,
+                senderId: currentUser._id,
+                content,
+            });
+        }
     };
 
     return (
@@ -50,7 +76,10 @@ export default function ChatLayout({
                         currentUserId={currentUser?._id ?? null}
                         currentUser={currentUser}
                         selectedUser={selectedUser}
+                        selectedGroupId={selectedGroupId}
+                        groups={groups}
                         onSelectUser={handleSelectUser}
+                        onSelectGroup={handleSelectGroup}
                     />
                 </div>
                 <div
@@ -71,7 +100,9 @@ export default function ChatLayout({
                     <RightPanel
                         selectedUser={selectedUser}
                         selectedUserData={users?.find((u) => u._id === selectedUser)}
-                        messages={messages}
+                        selectedGroupId={selectedGroupId}
+                        selectedGroupData={groups?.find((g) => g._id === selectedGroupId)}
+                        messages={selectedGroupId ? groupMessages : messages}
                         currentUserId={currentUser?._id ?? null}
                         onSend={handleSend}
                     />

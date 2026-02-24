@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, LogOut } from "lucide-react";
+import { Search, LogOut, Plus } from "lucide-react";
 import { useClerk, UserButton } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
@@ -22,18 +22,27 @@ interface LeftPanelProps {
     currentUserId: Id<"users"> | null;
     currentUser: Doc<"users"> | null;
     selectedUser: Id<"users"> | null;
+    selectedGroupId: Id<"groups"> | null;
+    groups: Doc<"groups">[] | undefined;
     onSelectUser: (id: Id<"users">) => void;
+    onSelectGroup: (id: Id<"groups">) => void;
 }
 
 export default function LeftPanel({
     currentUserId,
     currentUser,
     selectedUser,
+    selectedGroupId,
+    groups,
     onSelectUser,
+    onSelectGroup,
 }: LeftPanelProps) {
     const { signOut } = useClerk();
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [showGroupForm, setShowGroupForm] = useState(false);
+    const [groupName, setGroupName] = useState("");
+    const [selectedMemberIds, setSelectedMemberIds] = useState<Id<"users">[]>([]);
 
     const previews = useQuery(
         api.messages.getConversationPreviews,
@@ -45,6 +54,7 @@ export default function LeftPanel({
         () => new Set(onlinePresence?.map((p) => p.userId) ?? []),
         [onlinePresence]
     );
+    const createGroup = useMutation(api.groups.createGroup);
 
     useEffect(() => {
         const handler = setTimeout(() => setDebouncedSearch(search.trim()), 250);
@@ -58,6 +68,38 @@ export default function LeftPanel({
             (p) => !term || p.otherUser.name.toLowerCase().includes(term)
         );
     }, [previews, debouncedSearch]);
+
+    const allOtherUsers = useMemo(
+        () => previews?.map((p) => p.otherUser) ?? [],
+        [previews]
+    );
+
+    const toggleMember = (id: Id<"users">) => {
+        setSelectedMemberIds((prev) =>
+            prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]
+        );
+    };
+
+    const handleCreateGroup = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!currentUserId) return;
+        const name = groupName.trim();
+        if (!name) return;
+        try {
+            const groupId = await createGroup({
+                name,
+                createdBy: currentUserId,
+                memberIds: selectedMemberIds,
+            });
+            setGroupName("");
+            setSelectedMemberIds([]);
+            setShowGroupForm(false);
+            onSelectGroup(groupId as Id<"groups">);
+        } catch (err) {
+            // Swallow error for now; could show toast in future
+            console.error(err);
+        }
+    };
 
     return (
         <aside
@@ -117,7 +159,7 @@ export default function LeftPanel({
                     </p>
                 )}
                 {filtered.map(({ otherUser, lastMessage, unreadCount }) => {
-                    const isSelected = selectedUser === otherUser._id;
+                    const isSelected = selectedUser === otherUser._id && !selectedGroupId;
                     const isOnline = onlineSet.has(otherUser._id);
                     const isUnread = (unreadCount ?? 0) > 0 && !isSelected;
                     return (
@@ -181,6 +223,92 @@ export default function LeftPanel({
                         </button>
                     );
                 })}
+            </div>
+
+            <div className="border-t border-neutral-200 dark:border-neutral-700 px-3 py-2">
+                <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                        Groups
+                    </span>
+                    <button
+                        type="button"
+                        onClick={() => setShowGroupForm((prev) => !prev)}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium border border-neutral-200 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:outline-none focus:ring-1 focus:ring-neutral-300 dark:focus:ring-neutral-500"
+                    >
+                        <Plus size={12} />
+                        New
+                    </button>
+                </div>
+
+                {showGroupForm && (
+                    <form onSubmit={handleCreateGroup} className="mb-2 space-y-2">
+                        <input
+                            type="text"
+                            value={groupName}
+                            onChange={(e) => setGroupName(e.target.value)}
+                            placeholder="Group name"
+                            className="w-full px-2 py-1.5 rounded-md border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-xs text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-300 dark:focus:ring-neutral-500"
+                        />
+                        <div className="max-h-32 overflow-y-auto rounded-md border border-neutral-200 dark:border-neutral-600 bg-white/60 dark:bg-neutral-800/60 p-1">
+                            {allOtherUsers.length === 0 ? (
+                                <p className="text-[11px] text-neutral-400 dark:text-neutral-500 px-1 py-1">
+                                    No other users available
+                                </p>
+                            ) : (
+                                allOtherUsers.map((u) => (
+                                    <label
+                                        key={u._id}
+                                        className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            className="h-3.5 w-3.5 rounded border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100"
+                                            checked={selectedMemberIds.includes(u._id as Id<"users">)}
+                                            onChange={() => toggleMember(u._id as Id<"users">)}
+                                        />
+                                        <span className="text-xs text-neutral-800 dark:text-neutral-100 truncate">
+                                            {u.name}
+                                        </span>
+                                    </label>
+                                ))
+                            )}
+                        </div>
+                        <button
+                            type="submit"
+                            className="w-full px-2 py-1.5 rounded-md bg-neutral-900 dark:bg-neutral-100 text-[11px] font-semibold text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={!groupName.trim() || !currentUserId}
+                        >
+                            Create group
+                        </button>
+                    </form>
+                )}
+
+                <div className="space-y-1 max-h-40 overflow-y-auto">
+                    {groups && groups.length > 0 ? (
+                        groups.map((group) => {
+                            const isSelected = selectedGroupId === group._id;
+                            return (
+                                <button
+                                    key={group._id}
+                                    type="button"
+                                    onClick={() => onSelectGroup(group._id as Id<"groups">)}
+                                    className={`w-full text-left px-2 py-1.5 rounded-lg text-xs mx-0 transition-colors ${isSelected
+                                        ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
+                                        : "bg-transparent text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                                        }`}
+                                >
+                                    <span className="font-medium truncate">
+                                        {group.name}
+                                    </span>
+                                </button>
+                            );
+                        })
+                    ) : (
+                        <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                            No groups yet
+                        </p>
+                    )}
+                </div>
             </div>
         </aside>
     );
