@@ -41,11 +41,10 @@ export default function ChatLayout({
 
     return (
         <div className="h-screen bg-neutral-100 dark:bg-neutral-950 flex flex-col md:flex-row md:items-center md:justify-center">
-            <div className="w-full md:w-[1100px] max-w-full h-full md:max-h-[90vh] md:h-[90vh] bg-white dark:bg-neutral-900 md:rounded-xl border-0 md:border border-neutral-200 dark:border-neutral-700 flex overflow-hidden shadow-lg dark:shadow-none flex-col md:flex-row">
+            <div className="w-full md:w-275 max-w-full h-full md:max-h-[90vh] md:h-[90vh] bg-white dark:bg-neutral-900 md:rounded-xl border-0 md:border border-neutral-200 dark:border-neutral-700 flex overflow-hidden shadow-lg dark:shadow-none flex-col md:flex-row">
                 <div
-                    className={`flex flex-col flex-1 min-h-0 md:flex-row md:min-w-0 md:shrink-0 ${
-                        mobileChatOpen ? "hidden md:flex" : "flex"
-                    }`}
+                    className={`flex flex-col flex- min-h-0 md:flex-row md:min-w-0 md:shrink-0 ${mobileChatOpen ? "hidden md:flex" : "flex"
+                        }`}
                 >
                     <LeftPanel
                         currentUserId={currentUser?._id ?? null}
@@ -55,9 +54,8 @@ export default function ChatLayout({
                     />
                 </div>
                 <div
-                    className={`flex flex-col flex-1 min-h-0 min-w-0 ${
-                        mobileChatOpen ? "flex" : "hidden md:flex"
-                    }`}
+                    className={`flex flex-col flex-1 min-h-0 min-w-0 ${mobileChatOpen ? "flex" : "hidden md:flex"
+                        }`}
                 >
                     {mobileChatOpen && (
                         <button

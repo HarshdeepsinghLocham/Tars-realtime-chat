@@ -5,7 +5,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useEffect, useState } from "react";
 import { Id } from "../../convex/_generated/dataModel";
-import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { SignedIn } from "@clerk/nextjs";
 import ChatLayout from "@/components/layout/ChatLayout";
 
 export default function Home() {
@@ -40,12 +40,6 @@ export default function Home() {
 
   return (
     <>
-      <SignedOut>
-        <div className="flex h-screen items-center justify-center">
-          <SignInButton />
-        </div>
-      </SignedOut>
-
       <SignedIn>
         <ChatLayout
           currentUser={currentUser ?? null}

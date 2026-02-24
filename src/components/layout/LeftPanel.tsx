@@ -61,7 +61,7 @@ export default function LeftPanel({
 
     return (
         <aside
-            className="w-[300px] border-r border-neutral-200 dark:border-neutral-700 bg-neutral-50/80 dark:bg-neutral-900/50 flex flex-col shrink-0"
+            className="w-full md:w-75 border-r border-neutral-200 dark:border-neutral-700 bg-neutral-50/80 dark:bg-neutral-900/50 flex flex-col shrink-0"
             role="complementary"
             aria-label="Conversations"
         >
@@ -158,7 +158,7 @@ export default function LeftPanel({
                                         {otherUser.name}
                                     </p>
                                     {(unreadCount ?? 0) > 0 && (
-                                        <span className="absolute top-0 right-0 min-w-[18px] h-[18px] px-1 rounded-full bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-medium flex items-center justify-center">
+                                        <span className="absolute top-0 right-0 min-w-4.5 h-4.5 px-1 rounded-full bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-medium flex items-center justify-center">
                                             {unreadCount > 99 ? "99+" : unreadCount}
                                         </span>
                                     )}
