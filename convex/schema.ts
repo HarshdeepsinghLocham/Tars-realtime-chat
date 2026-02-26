@@ -22,11 +22,17 @@ export default defineSchema({
     groups: defineTable({
         name: v.string(),
         createdBy: v.id("users"),
-    }).index("by_createdBy", ["createdBy"]),
-
+        image: v.optional(v.string()),
+    }).index("by_createdBy", ["createdBy"])
+        .searchIndex("search_name", {
+            searchField: "name",
+        }),
     groupMembers: defineTable({
         groupId: v.id("groups"),
         userId: v.id("users"),
+        role: v.optional(
+            v.union(v.literal("admin"), v.literal("member"))
+        ),
     })
         .index("by_group", ["groupId"])
         .index("by_user", ["userId"])
@@ -55,4 +61,11 @@ export default defineSchema({
     })
         .index("by_room", ["room"])
         .index("by_room_user", ["room", "userId"]),
+
+    groupReadReceipts: defineTable({
+        groupId: v.id("groups"),
+        userId: v.id("users"),
+        lastReadAt: v.number(),
+    })
+        .index("by_group_user", ["groupId", "userId"]),
 });
