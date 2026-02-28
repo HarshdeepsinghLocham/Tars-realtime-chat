@@ -7,7 +7,7 @@ export const createGroup = mutation({
         name: v.string(),
         createdBy: v.id("users"),
         memberIds: v.array(v.id("users")),
-        image: v.optional(v.string()),
+        image: v.optional(v.id("_storage")),
     },
     handler: async (ctx, args) => {
         const groupId = await ctx.db.insert("groups", {
@@ -124,7 +124,7 @@ export const updateGroupAvatar = mutation({
     args: {
         groupId: v.id("groups"),
         userId: v.id("users"),
-        image: v.string(),
+        image: v.id("_storage"),
     },
     handler: async (ctx, { groupId, userId, image }) => {
         const membership = await ctx.db
@@ -258,5 +258,56 @@ export const getGroupMessages = query({
             .withIndex("by_group", (q) => q.eq("groupId", args.groupId))
             .collect();
         return messages.sort((a, b) => a._creationTime - b._creationTime);
+    },
+});
+export const getUserGroups = query({
+    args: { userId: v.id("users") },
+    handler: async (ctx, { userId }) => {
+        const memberships = await ctx.db
+            .query("groupMembers")
+            .withIndex("by_user", (q) => q.eq("userId", userId))
+            .collect();
+
+        const groups = await Promise.all(
+            memberships.map(async (m) => {
+                const group = await ctx.db.get(m.groupId);
+                if (!group) return null;
+
+                // ✅ Get latest message
+                const lastMessage = await ctx.db
+                    .query("messages")
+                    .withIndex("by_group", (q) => q.eq("groupId", group._id))
+                    .order("desc")
+                    .first();
+
+                let imageUrl: string | null = null;
+
+                if (group.image) {
+                    imageUrl = await ctx.storage.getUrl(group.image);
+                }
+
+                let lastMessageData = null;
+
+                if (lastMessage) {
+                    const sender = await ctx.db.get(lastMessage.senderId);
+
+                    lastMessageData = {
+                        content: lastMessage.content,
+                        senderName: sender?.name ?? "Unknown",
+                        createdAt: lastMessage._creationTime,
+                    };
+                }
+
+                return {
+                    _id: group._id,
+                    name: group.name,
+                    imageUrl,
+                    lastMessage: lastMessageData,
+                    lastMessageTime: lastMessage?._creationTime ?? null,
+                };
+            })
+        );
+
+        return groups.filter(Boolean);
     },
 });

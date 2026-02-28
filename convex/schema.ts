@@ -22,7 +22,7 @@ export default defineSchema({
     groups: defineTable({
         name: v.string(),
         createdBy: v.id("users"),
-        image: v.optional(v.string()),
+        image: v.optional(v.id("_storage")),
     }).index("by_createdBy", ["createdBy"])
         .searchIndex("search_name", {
             searchField: "name",
