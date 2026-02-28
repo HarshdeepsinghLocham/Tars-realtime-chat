@@ -10,23 +10,27 @@ import MessageList from "@/components/chat/MessageList";
 import type { OptimisticMessage } from "@/components/chat/MessageList";
 import MessageInput from "@/components/chat/MessageInput";
 import TypingIndicator from "@/components/chat/TypingIndicator";
+import type { UserGroupWithMeta } from "@/types/groups";
 
 const HEARTBEAT_MS = 15_000;
 
+type SelectedConversation =
+    | { type: "dm"; id: Id<"users"> }
+    | { type: "group"; id: Id<"groups"> }
+    | null;
+
 interface RightPanelProps {
-    selectedUser: Id<"users"> | null;
+    selectedConversation: SelectedConversation;
     selectedUserData: Doc<"users"> | undefined;
-    selectedGroupId: Id<"groups"> | null;
-    selectedGroupData: Doc<"groups"> | undefined;
+    selectedGroupData: UserGroupWithMeta | undefined;
     messages: (Doc<"messages"> & { _creationTime: number })[] | undefined;
     currentUserId: Id<"users"> | null;
     onSend: (content: string) => void | Promise<unknown>;
 }
 
 export default function RightPanel({
-    selectedUser,
+    selectedConversation,
     selectedUserData,
-    selectedGroupId,
     selectedGroupData,
     messages,
     currentUserId,
@@ -39,7 +43,10 @@ export default function RightPanel({
     const deleteMessage = useMutation(api.messages.deleteMessage);
     const markRead = useMutation(api.readReceipts.markRead);
     const toggleReaction = useMutation(api.reactions.toggleReaction);
-    const convRoom = selectedUser && currentUserId ? conversationRoom(currentUserId, selectedUser) : null;
+    const convRoom =
+        selectedConversation?.type === "dm" && currentUserId
+            ? conversationRoom(currentUserId, selectedConversation.id)
+            : null;
     const presenceInRoom = useQuery(
         api.presence.getPresence,
         convRoom ? { room: convRoom } : "skip"
@@ -50,9 +57,12 @@ export default function RightPanel({
     );
     const othersTyping = presenceInRoom?.filter((p) => p.userId !== currentUserId && p.typing) ?? [];
     const typingName = othersTyping.length > 0 && selectedUserData ? selectedUserData.name : null;
-    const isSelectedUserOnline = Boolean(
-        selectedUser && onlinePresence?.some((p) => p.userId === selectedUser)
-    );
+    const isSelectedUserOnline =
+        selectedConversation?.type === "dm"
+            ? onlinePresence?.some(
+                (p) => p.userId === selectedConversation.id
+            ) ?? false
+            : false;
 
     const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -74,10 +84,16 @@ export default function RightPanel({
     }, [convRoom, currentUserId, updatePresence]);
 
     useEffect(() => {
-        if (currentUserId && selectedUser) {
-            markRead({ userId: currentUserId, peerId: selectedUser });
+        if (
+            currentUserId &&
+            selectedConversation?.type === "dm"
+        ) {
+            markRead({
+                userId: currentUserId,
+                peerId: selectedConversation.id,
+            });
         }
-    }, [currentUserId, selectedUser, markRead]);
+    }, [currentUserId, selectedConversation, markRead]);
 
     const handleSend = useCallback(
         async (content: string) => {
@@ -134,7 +150,7 @@ export default function RightPanel({
             </div>
 
             <div className="flex-1 flex flex-col overflow-hidden px-4 min-h-0">
-                {selectedUser || selectedGroupId ? (
+                {selectedConversation ? (
                     <>
                         <MessageList
                             messages={messages}

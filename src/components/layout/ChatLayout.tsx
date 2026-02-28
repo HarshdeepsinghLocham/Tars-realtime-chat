@@ -5,60 +5,65 @@ import type { Doc, Id } from "../../../convex/_generated/dataModel";
 import LeftPanel from "./LeftPanel";
 import RightPanel from "./RightPanel";
 import { ArrowLeft } from "lucide-react";
+import type { UserGroupWithMeta } from "@/types/groups";
+
+type SelectedConversation =
+    | { type: "dm"; id: Id<"users"> }
+    | { type: "group"; id: Id<"groups"> }
+    | null;
 
 interface ChatLayoutProps {
     currentUser: Doc<"users"> | null;
     users: Doc<"users">[] | undefined;
-    selectedUser: Id<"users"> | null;
-    setSelectedUser: (id: Id<"users"> | null) => void;
-    messages: (Doc<"messages"> & { _creationTime: number; deleted?: boolean })[] | undefined;
-    sendMessage: (args: { senderId: Id<"users">; receiverId: Id<"users">; content: string }) => Promise<unknown>;
-    selectedGroupId: Id<"groups"> | null;
-    setSelectedGroupId: (id: Id<"groups"> | null) => void;
-    groupMessages: (Doc<"messages"> & { _creationTime: number; deleted?: boolean })[] | undefined;
-    sendGroupMessage: (args: { groupId: Id<"groups">; senderId: Id<"users">; content: string }) => Promise<unknown>;
-    groups: Doc<"groups">[] | undefined;
+    selectedConversation: SelectedConversation;
+    onSelectConversation: (c: SelectedConversation) => void;
+    messages:
+    | (Doc<"messages"> & { _creationTime: number; deleted?: boolean })[]
+    | undefined;
+    sendMessage: (args: {
+        senderId: Id<"users">;
+        receiverId: Id<"users">;
+        content: string;
+    }) => Promise<unknown>;
+    sendGroupMessage: (args: {
+        groupId: Id<"groups">;
+        senderId: Id<"users">;
+        content: string;
+    }) => Promise<unknown>;
+    groups: UserGroupWithMeta[] | undefined;
 }
 
 export default function ChatLayout({
     currentUser,
     users,
-    selectedUser,
-    setSelectedUser,
+    selectedConversation,
+    onSelectConversation,
     messages,
     sendMessage,
-    selectedGroupId,
-    setSelectedGroupId,
-    groupMessages,
     sendGroupMessage,
     groups,
 }: ChatLayoutProps) {
     const [mobileChatOpen, setMobileChatOpen] = useState(false);
 
-    const handleSelectUser = (id: Id<"users">) => {
-        setSelectedUser(id);
-        setSelectedGroupId(null);
-        setMobileChatOpen(true);
-    };
-
-    const handleSelectGroup = (id: Id<"groups">) => {
-        setSelectedGroupId(id);
-        setSelectedUser(null);
+    const handleSelectConversation = (conversation: SelectedConversation) => {
+        onSelectConversation(conversation);
         setMobileChatOpen(true);
     };
 
     const handleSend = async (content: string) => {
-        if (!currentUser) return;
+        if (!currentUser || !selectedConversation) return;
 
-        if (selectedUser) {
+        if (selectedConversation.type === "dm") {
             await sendMessage({
                 senderId: currentUser._id,
-                receiverId: selectedUser,
+                receiverId: selectedConversation.id,
                 content,
             });
-        } else if (selectedGroupId) {
+        }
+
+        if (selectedConversation.type === "group") {
             await sendGroupMessage({
-                groupId: selectedGroupId,
+                groupId: selectedConversation.id,
                 senderId: currentUser._id,
                 content,
             });
@@ -75,11 +80,9 @@ export default function ChatLayout({
                     <LeftPanel
                         currentUserId={currentUser?._id ?? null}
                         currentUser={currentUser}
-                        selectedUser={selectedUser}
-                        selectedGroupId={selectedGroupId}
+                        selectedConversation={selectedConversation}
+                        onSelectConversation={handleSelectConversation}
                         groups={groups}
-                        onSelectUser={handleSelectUser}
-                        onSelectGroup={handleSelectGroup}
                     />
                 </div>
                 <div
@@ -98,11 +101,18 @@ export default function ChatLayout({
                         </button>
                     )}
                     <RightPanel
-                        selectedUser={selectedUser}
-                        selectedUserData={users?.find((u) => u._id === selectedUser)}
-                        selectedGroupId={selectedGroupId}
-                        selectedGroupData={groups?.find((g) => g._id === selectedGroupId)}
-                        messages={selectedGroupId ? groupMessages : messages}
+                        selectedConversation={selectedConversation}
+                        selectedUserData={
+                            selectedConversation?.type === "dm"
+                                ? users?.find(u => u._id === selectedConversation.id)
+                                : undefined
+                        }
+                        selectedGroupData={
+                            selectedConversation?.type === "group"
+                                ? groups?.find(g => g._id === selectedConversation.id)
+                                : undefined
+                        }
+                        messages={messages}
                         currentUserId={currentUser?._id ?? null}
                         onSend={handleSend}
                     />

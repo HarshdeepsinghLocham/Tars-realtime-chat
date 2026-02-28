@@ -1,10 +1,11 @@
 "use client";
 
-import { Doc } from "../../../convex/_generated/dataModel";
+import type { Doc } from "../../../convex/_generated/dataModel";
+import type { UserGroupWithMeta } from "@/types/groups";
 
 interface ChatHeaderProps {
     selectedUserData?: Doc<"users">;
-    selectedGroupData?: Doc<"groups">;
+    selectedGroupData?: UserGroupWithMeta;
     isOnline?: boolean;
 }
 
