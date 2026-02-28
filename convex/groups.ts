@@ -1,6 +1,18 @@
-import { Doc } from "./_generated/dataModel";
+import { Doc, Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+
+export interface UserGroupWithMeta {
+    _id: Id<"groups">;
+    name: string;
+    imageUrl: string | null;
+    lastMessage: {
+        content: string;
+        senderName: string;
+        createdAt: number;
+    } | null;
+    lastMessageTime: number | null;
+}
 
 export const createGroup = mutation({
     args: {
@@ -262,7 +274,7 @@ export const getGroupMessages = query({
 });
 export const getUserGroups = query({
     args: { userId: v.id("users") },
-    handler: async (ctx, { userId }) => {
+    handler: async (ctx, { userId }): Promise<UserGroupWithMeta[]> => {
         const memberships = await ctx.db
             .query("groupMembers")
             .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -308,6 +320,8 @@ export const getUserGroups = query({
             })
         );
 
-        return groups.filter(Boolean);
+        return groups.filter(
+            (g): g is UserGroupWithMeta => g !== null
+        );
     },
 });
