@@ -27,18 +27,32 @@ export const deleteMessage = mutation({
 
 export const getMessages = query({
     args: {
-        user1: v.id("users"),
-        user2: v.id("users"),
+        peerId: v.id("users"),
     },
-    handler: async (ctx, args) => {
-        const messages = await ctx.db.query("messages").collect();
-        const filtered = messages.filter(
-            (m) =>
-                m.receiverId != null &&
-                ((m.senderId === args.user1 && m.receiverId === args.user2) ||
-                    (m.senderId === args.user2 && m.receiverId === args.user1))
+    handler: async (ctx, { peerId }) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Unauthorized");
+
+        const currentUser = await ctx.db
+            .query("users")
+            .withIndex("by_clerkId", q =>
+                q.eq("clerkId", identity.subject)
+            )
+            .unique();
+
+        if (!currentUser) throw new Error("User not found");
+
+        const messages = await ctx.db
+            .query("messages")
+            .collect();
+
+        return messages.filter(
+            m =>
+                (m.senderId === currentUser._id &&
+                    m.receiverId === peerId) ||
+                (m.senderId === peerId &&
+                    m.receiverId === currentUser._id)
         );
-        return filtered.sort((a, b) => a._creationTime - b._creationTime);
     },
 });
 
@@ -89,8 +103,8 @@ export const getConversationPreviews = query({
                 between.length === 0
                     ? null
                     : between.reduce((a, b) =>
-                          a._creationTime >= b._creationTime ? a : b
-                      );
+                        a._creationTime >= b._creationTime ? a : b
+                    );
             const receipt = allReceipts.find(
                 (r) => r.userId === args.currentUserId && r.peerId === otherUser._id
             );
@@ -107,11 +121,11 @@ export const getConversationPreviews = query({
                 otherUser,
                 lastMessage: latest
                     ? {
-                          content: latest.deleted ? "[deleted]" : latest.content,
-                          _creationTime: latest._creationTime,
-                          senderId: latest.senderId,
-                          deleted: latest.deleted,
-                      }
+                        content: latest.deleted ? "[deleted]" : latest.content,
+                        _creationTime: latest._creationTime,
+                        senderId: latest.senderId,
+                        deleted: latest.deleted,
+                    }
                     : null,
                 unreadCount,
             };
