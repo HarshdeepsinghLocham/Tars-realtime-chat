@@ -1,7 +1,7 @@
 "use client";
 
 import type { Doc } from "../../../convex/_generated/dataModel";
-import type { UserGroupWithMeta } from "@/types/groups";
+import type { UserGroupWithMeta } from "../../../convex/groups";
 
 interface ChatHeaderProps {
     selectedUserData?: Doc<"users">;
@@ -55,9 +55,8 @@ export default function ChatHeader({
                         className="w-10 h-10 rounded-full object-cover ring-2 ring-neutral-100 dark:ring-neutral-800"
                     />
                     <span
-                        className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-neutral-800 ${
-                            isOnline ? "bg-emerald-500" : "bg-neutral-300 dark:bg-neutral-600"
-                        }`}
+                        className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-neutral-800 ${isOnline ? "bg-emerald-500" : "bg-neutral-300 dark:bg-neutral-600"
+                            }`}
                         aria-hidden
                         title={isOnline ? "Online" : "Offline"}
                     />

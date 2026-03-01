@@ -1,7 +1,7 @@
 
 import type { Id } from "../../../convex/_generated/dataModel";
 import ConversationItem from "./ConversationItem";
-import type { UserGroupWithMeta } from "@/types/groups";
+import type { UserGroupWithMeta } from "../../../convex/groups";
 
 type SelectedConversation =
     | { type: "dm"; id: Id<"users"> }
@@ -28,7 +28,7 @@ export default function ConversationList({
     onMarkRead,
 }: Props) {
     return (
-        <div className="flex-1 overflow-y-auto py-1">
+        <div className="flex-1 min-h-0 overflow-y-auto py-1 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-neutral-900">
             {dms.map((dm) => (
                 <ConversationItem
                     key={`dm-${dm.otherUser._id}`}

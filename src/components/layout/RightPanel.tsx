@@ -10,7 +10,7 @@ import MessageList from "@/components/chat/MessageList";
 import type { OptimisticMessage } from "@/components/chat/MessageList";
 import MessageInput from "@/components/chat/MessageInput";
 import TypingIndicator from "@/components/chat/TypingIndicator";
-import type { UserGroupWithMeta } from "@/types/groups";
+import type { UserGroupWithMeta } from "../../../convex/groups";
 
 const HEARTBEAT_MS = 15_000;
 
@@ -140,31 +140,35 @@ export default function RightPanel({
     );
 
     return (
-        <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-neutral-900/95">
-            <div className="px-4 py-4 border-b border-neutral-200 dark:border-neutral-600/80">
+        <div className="flex-1 flex flex-col min-h-0 bg-neutral-900 text-white">
+            {/* Header: fixed at top */}
+            <header className="shrink-0 px-4 py-4 border-b border-neutral-800 bg-neutral-900">
                 <ChatHeader
                     selectedUserData={selectedUserData}
                     selectedGroupData={selectedGroupData}
                     isOnline={isSelectedUserOnline}
                 />
-            </div>
+            </header>
 
-            <div className="flex-1 flex flex-col overflow-hidden px-4 min-h-0">
+            {/* Message list: scrollable, flex-1, min-h-0 */}
+            <div className="flex-1 min-h-0 flex flex-col">
                 {selectedConversation ? (
                     <>
-                        <MessageList
-                            messages={messages}
-                            optimisticMessages={optimisticMessages}
-                            currentUserId={currentUserId}
-                            otherUserName={selectedGroupData ? selectedGroupData.name : selectedUserData?.name}
-                            onDeleteMessage={(id) => currentUserId && deleteMessage({ messageId: id, userId: currentUserId })}
-                            onToggleReaction={(messageId, emoji) => currentUserId && toggleReaction({ messageId, userId: currentUserId, emoji })}
-                        />
+                        <section className="flex-1 min-h-0 overflow-y-auto px-4 py-2 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-neutral-900">
+                            <MessageList
+                                messages={messages}
+                                optimisticMessages={optimisticMessages}
+                                currentUserId={currentUserId}
+                                otherUserName={selectedGroupData ? selectedGroupData.name : selectedUserData?.name}
+                                onDeleteMessage={(id) => currentUserId && deleteMessage({ messageId: id, userId: currentUserId })}
+                                onToggleReaction={(messageId, emoji) => currentUserId && toggleReaction({ messageId, userId: currentUserId, emoji })}
+                            />
+                        </section>
                         {typingName && (
                             <TypingIndicator label={typingName} />
                         )}
                         {sendError && (
-                            <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
+                            <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg bg-red-900/20 text-red-300 text-sm mt-2">
                                 <span>{sendError}</span>
                                 {pendingRetry && (
                                     <button
@@ -173,17 +177,20 @@ export default function RightPanel({
                                             handleSend(pendingRetry);
                                             setPendingRetry(null);
                                         }}
-                                        className="px-2 py-1 rounded bg-red-200 dark:bg-red-800/50 hover:bg-red-300 dark:hover:bg-red-800 text-sm font-medium"
+                                        className="px-2 py-1 rounded bg-red-800/50 hover:bg-red-800 text-sm font-medium"
                                     >
                                         Retry
                                     </button>
                                 )}
                             </div>
                         )}
-                        <MessageInput onSend={handleSend} onTyping={handleTyping} />
+                        {/* Message input: fixed at bottom */}
+                        <footer className="shrink-0 px-4 py-3 border-t border-neutral-800 bg-neutral-900">
+                            <MessageInput onSend={handleSend} onTyping={handleTyping} />
+                        </footer>
                     </>
                 ) : (
-                    <div className="flex-1 flex items-center justify-center text-neutral-400 dark:text-neutral-500 text-sm">
+                    <div className="flex-1 flex items-center justify-center text-neutral-500 text-sm">
                         Select a conversation
                     </div>
                 )}

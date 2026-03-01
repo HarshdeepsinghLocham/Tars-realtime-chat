@@ -7,7 +7,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { ONLINE_ROOM } from "@/lib/presence-rooms";
 import type { Doc, Id } from "../../../convex/_generated/dataModel";
-import type { UserGroupWithMeta } from "@/types/groups";
+import type { UserGroupWithMeta } from "../../../convex/groups";
 
 import LeftPanelHeader from "./LeftPanelHeader";
 import ConversationSearch from "./ConversationSearch";
@@ -22,6 +22,7 @@ type SelectedConversation =
 interface Props {
     currentUserId: Id<"users"> | null;
     currentUser: Doc<"users"> | null;
+    isCurrentUserLoading?: boolean;
     selectedConversation: SelectedConversation;
     groups: UserGroupWithMeta[] | undefined;
     onSelectConversation: (c: SelectedConversation) => void;
@@ -30,6 +31,7 @@ interface Props {
 export default function LeftPanel({
     currentUserId,
     currentUser,
+    isCurrentUserLoading = false,
     selectedConversation,
     groups,
     onSelectConversation,
@@ -83,15 +85,22 @@ export default function LeftPanel({
 
             <ConversationSearch value={search} onChange={setSearch} />
 
-            <ConversationList
-                selectedConversation={selectedConversation}
-                dms={filteredDMs}
-                groups={groups}
-                onlineSet={onlineSet}
-                currentUserId={currentUserId}
-                onSelectConversation={onSelectConversation}
-                onMarkRead={markRead}
-            />
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                {isCurrentUserLoading && (
+                    <div className="py-2 px-3 text-center text-sm text-neutral-500 dark:text-neutral-400 shrink-0">
+                        Loading conversations…
+                    </div>
+                )}
+                <ConversationList
+                    selectedConversation={selectedConversation}
+                    dms={filteredDMs}
+                    groups={groups ?? []}
+                    onlineSet={onlineSet}
+                    currentUserId={currentUserId}
+                    onSelectConversation={onSelectConversation}
+                    onMarkRead={markRead}
+                />
+            </div>
 
             <CreateGroupDialog
                 open={isCreateDialogOpen}
@@ -102,7 +111,6 @@ export default function LeftPanel({
                     if (!currentUserId) return;
                     const groupId = await createGroup({
                         name,
-                        createdBy: currentUserId,
                         memberIds,
                         image,
                     });

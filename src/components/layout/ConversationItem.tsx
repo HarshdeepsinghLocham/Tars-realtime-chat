@@ -17,21 +17,19 @@ export default function ConversationItem({
     const isSelected =
         selectedConversation?.id === id &&
         selectedConversation?.type === type;
-
     return (
         <button
             onClick={() => {
                 onSelect({ type, id });
-
                 if (type === "dm" && currentUserId) {
-                    onMarkRead({
-                        userId: currentUserId,
-                        peerId: id,
-                    });
+                    onMarkRead({ userId: currentUserId, peerId: id });
                 }
             }}
-            className={`w-full px-2 py-2 text-left ${isSelected ? "bg-neutral-100 dark:bg-neutral-700" : ""
-                }`}
+            className={`w-full px-2 py-2 text-left rounded-lg transition-colors
+                ${isSelected ? "bg-neutral-800 text-white" : "bg-transparent"}
+                hover:bg-neutral-700/80 focus:bg-neutral-700/80
+                border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500
+            `}
         >
             <div className="flex gap-2 items-start">
                 <div className="relative">
@@ -41,38 +39,40 @@ export default function ConversationItem({
                             className="w-9 h-9 rounded-full object-cover"
                         />
                     ) : (
-                        <div className="w-9 h-9 rounded-full bg-neutral-300 flex items-center justify-center text-xs">
+                        <div className="w-9 h-9 rounded-full bg-neutral-700 flex items-center justify-center text-xs text-white">
                             {name.charAt(0)}
                         </div>
                     )}
                     {type === "dm" && isOnline && (
-                        <span className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-500 rounded-full" />
+                        <span className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-500 rounded-full border-2 border-neutral-900" />
                     )}
                 </div>
 
                 <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{name}</p>
 
-                    {type === "dm" && lastMessage && (
-                        <>
+                    {lastMessage && (
+                        <div className="flex justify-between items-center mt-0.5">
                             <p className="text-xs text-neutral-400 truncate">
-                                {lastMessage.content}
-                            </p>
-                            <p className="text-xs text-neutral-400">
-                                {formatMessageTime(lastMessage._creationTime)}
-                            </p>
-                        </>
-                    )}
-                    {type === "group" && lastMessage && (
-                        <p className="text-xs text-neutral-500 truncate">
-                            <span className="text-blue-300">{lastMessage.senderName}</span> {lastMessage.content}
-                        </p>
-                    )}
+                                {type === "group" && (
+                                    <span className="text-blue-400 mr-1">
+                                        {lastMessage.senderName}:
+                                    </span>
+                                )}
 
-                    {lastMessage?.createdAt && (
-                        <span className="text-[10px] text-neutral-400">
-                            {formatMessageTime(lastMessage.createdAt)}
-                        </span>
+                                {lastMessage.deleted
+                                    ? "Message deleted"
+                                    : lastMessage.content}
+                            </p>
+
+                            <span className="text-[10px] text-neutral-500 whitespace-nowrap ml-2">
+                                {formatMessageTime(
+                                    type === "dm"
+                                        ? lastMessage._creationTime
+                                        : lastMessage.createdAt
+                                )}
+                            </span>
+                        </div>
                     )}
                 </div>
 

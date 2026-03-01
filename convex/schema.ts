@@ -23,6 +23,7 @@ export default defineSchema({
         name: v.string(),
         createdBy: v.id("users"),
         image: v.optional(v.id("_storage")),
+        lastMessageId: v.optional(v.id("messages"))
     }).index("by_createdBy", ["createdBy"])
         .searchIndex("search_name", {
             searchField: "name",
