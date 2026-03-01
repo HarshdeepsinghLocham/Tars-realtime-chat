@@ -20,8 +20,6 @@
 # production
 /build
 
-# Convex 
-_generated
 
 # misc
 .DS_Store
