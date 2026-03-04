@@ -140,9 +140,9 @@ export default function RightPanel({
     );
 
     return (
-        <div className="flex-1 flex flex-col min-h-0 bg-neutral-900 text-white">
+        <div className="flex-1 flex flex-col min-h-0 bg-neutral-50/80 dark:bg-neutral-900 text-neutral-900 dark:text-white">
             {/* Header: fixed at top */}
-            <header className="shrink-0 px-4 py-4 border-b border-neutral-800 bg-neutral-900">
+            <header className="shrink-0 px-4 py-4 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-900">
                 <ChatHeader
                     selectedUserData={selectedUserData}
                     selectedGroupData={selectedGroupData}
@@ -154,7 +154,7 @@ export default function RightPanel({
             <div className="flex-1 min-h-0 flex flex-col">
                 {selectedConversation ? (
                     <>
-                        <section className="flex-1 min-h-0 overflow-y-auto px-4 py-2 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-neutral-900">
+                        <section className="flex-1 min-h-0 overflow-y-auto px-4 py-2 scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-800 scrollbar-track-neutral-100 dark:scrollbar-track-neutral-900">
                             <MessageList
                                 messages={messages}
                                 optimisticMessages={optimisticMessages}
@@ -168,7 +168,7 @@ export default function RightPanel({
                             <TypingIndicator label={typingName} />
                         )}
                         {sendError && (
-                            <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg bg-red-900/20 text-red-300 text-sm mt-2">
+                            <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg bg-red-100/80 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm mt-2">
                                 <span>{sendError}</span>
                                 {pendingRetry && (
                                     <button
@@ -177,7 +177,7 @@ export default function RightPanel({
                                             handleSend(pendingRetry);
                                             setPendingRetry(null);
                                         }}
-                                        className="px-2 py-1 rounded bg-red-800/50 hover:bg-red-800 text-sm font-medium"
+                                        className="px-2 py-1 rounded bg-red-200 dark:bg-red-800/50 hover:bg-red-300 dark:hover:bg-red-800 text-sm font-medium"
                                     >
                                         Retry
                                     </button>
@@ -185,12 +185,12 @@ export default function RightPanel({
                             </div>
                         )}
                         {/* Message input: fixed at bottom */}
-                        <footer className="shrink-0 px-4 py-3 border-t border-neutral-800 bg-neutral-900">
+                        <footer className="shrink-0 px-4 py-3 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-900">
                             <MessageInput onSend={handleSend} onTyping={handleTyping} />
                         </footer>
                     </>
                 ) : (
-                    <div className="flex-1 flex items-center justify-center text-neutral-500 text-sm">
+                    <div className="flex-1 flex items-center justify-center text-neutral-500 dark:text-neutral-400 text-sm">
                         Select a conversation
                     </div>
                 )}
